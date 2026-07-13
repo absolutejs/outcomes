@@ -1,6 +1,6 @@
 {
   "author": "Alex Kahn",
-  "description": "Outcome feedback loop for AI agents \u2014 typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
+  "description": "Outcome feedback loop for AI agents — typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
   "devDependencies": {
     "@types/bun": "latest",
     "prettier": "3.5.3",
@@ -33,7 +33,7 @@
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "types": "./dist/src/index.d.ts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "absolutejs": {
     "manifestContract": 1
   },
