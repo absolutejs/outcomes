@@ -10,8 +10,10 @@
  */
 
 export {
+  compareOutcomeSlices,
   computeOutcomeStats,
   renderEvidence,
+  type OutcomeComparison,
   type OutcomeRates,
   type OutcomeStats,
 } from "./stats";

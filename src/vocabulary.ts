@@ -8,7 +8,8 @@
  */
 
 /** A typed artifact feature. Numbers report by the buckets you define;
- *  strings by their closed value set; booleans by true/false. */
+ *  strings by their value set — or OPEN, when you can't know the values in
+ *  advance; booleans by true/false. */
 export type OutcomeFeatureSpec =
   | {
       type: "number";
@@ -18,7 +19,16 @@ export type OutcomeFeatureSpec =
       /** Label for values above every bucket's max. */
       overflowLabel: string;
     }
-  | { type: "string"; values: readonly string[] }
+  | {
+      type: "string";
+      /** The closed set of values. Omit for an OPEN vocabulary: every distinct
+       *  value becomes its own bucket. That is the only way to slice by
+       *  something you can't enumerate at author time — a prompt hash, a config
+       *  version, a model id you haven't shipped yet. Without it, "did that
+       *  prompt change help?" is unanswerable, because the version you're asking
+       *  about wasn't in the enum when the code was written. */
+      values?: readonly string[];
+    }
   | { type: "boolean" };
 
 export type OutcomeFeatures = Record<string, number | string | boolean>;
@@ -61,10 +71,11 @@ export const bucketFeatureValue = (
     return typeof value === "boolean" ? String(value) : null;
   }
   if (spec.type === "string") {
-    return typeof value === "string" &&
-      spec.values.some((entry) => entry === value)
-      ? value
-      : null;
+    if (typeof value !== "string") return null;
+    // Open vocabulary: the value IS the bucket.
+    if (spec.values === undefined) return value;
+
+    return spec.values.some((entry) => entry === value) ? value : null;
   }
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
   const bucket = spec.buckets.find((entry) => value <= entry.max);

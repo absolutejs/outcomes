@@ -29,6 +29,23 @@ export type OutcomeStats = {
   byVariant?: Record<string, OutcomeRates>;
 };
 
+/** One slice measured AGAINST the baseline — the shape a host actually wants
+ *  to show a human, because a rate on its own says nothing. `lift` is the
+ *  difference from the overall rate (+0.30 = thirty points worse/better), and
+ *  `confident` is whether the slice has enough of its OWN evidence to be worth
+ *  believing. A slice of four is a coincidence; this is what stops a host
+ *  rendering it as a finding. */
+export type OutcomeComparison = {
+  bucket: string;
+  confident: boolean;
+  count: number;
+  feature: string;
+  /** Signed difference from the baseline rate, rounded like a rate. */
+  lift: number;
+  outcome: string;
+  rate: number;
+};
+
 const round = (value: number) => Number(value.toFixed(RATE_DECIMALS));
 
 const emptyRates = (outcomes: readonly string[]): OutcomeRates => ({
@@ -138,4 +155,49 @@ export const renderEvidence = (stats: OutcomeStats) => {
   }
 
   return lines.join("\n");
+};
+
+const DEFAULT_SLICE_FLOOR = 6;
+/** Two proportions this far apart on small n are noise, not signal. */
+const MIN_ABSOLUTE_LIFT = 0.05;
+
+/**
+ * Every feature bucket, measured against the overall rate for ONE outcome, and
+ * sorted worst-first (or best-first for a good outcome — you choose by which
+ * outcome you ask about).
+ *
+ * This is the question a host is really asking — "what is dragging this down?"
+ * — and it is deliberately NOT a rate table. A bucket only counts as
+ * `confident` when it clears its own sample floor AND its lift is big enough to
+ * survive the noise of a small n, so a host can render the confident ones as
+ * findings and the rest as "not enough yet" without inventing its own statistics
+ * (which is exactly what every consumer would otherwise do, differently).
+ */
+export const compareOutcomeSlices = (
+  stats: OutcomeStats,
+  outcome: string,
+  options?: { minAbsoluteLift?: number; sliceFloor?: number },
+): OutcomeComparison[] => {
+  const floor = options?.sliceFloor ?? DEFAULT_SLICE_FLOOR;
+  const minLift = options?.minAbsoluteLift ?? MIN_ABSOLUTE_LIFT;
+  const baseline = stats.overall.outcomes[outcome]?.rate ?? 0;
+
+  return Object.entries(stats.byFeature)
+    .flatMap(([feature, buckets]) =>
+      Object.entries(buckets).map(([bucket, rates]) => {
+        const rate = rates.outcomes[outcome]?.rate ?? 0;
+        const lift = round(rate - baseline);
+
+        return {
+          bucket,
+          confident: rates.count >= floor && Math.abs(lift) >= minLift,
+          count: rates.count,
+          feature,
+          lift,
+          outcome,
+          rate,
+        };
+      }),
+    )
+    .sort((left, right) => right.lift - left.lift);
 };

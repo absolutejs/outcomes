@@ -34,6 +34,15 @@ export type OutcomeStore = {
     outcome: string;
     at?: Date;
   }) => Promise<void>;
+  /** EVERY owner's artifacts of this kind — product-wide learning ("what makes
+   *  answers bad for everyone") as opposed to the per-owner loop ("what works
+   *  for THIS member"). Optional: a store that only serves the per-owner loop
+   *  needn't implement it. Without it a host has to reach past the store and
+   *  hand-roll the query, which is exactly the seam leaking. */
+  listAllArtifactsWithOutcomes?: (
+    kind: string,
+    since: Date,
+  ) => Promise<ArtifactWithOutcomes[]>;
   listArtifactsWithOutcomes: (
     ownerId: string,
     kind: string,
@@ -51,9 +60,28 @@ export const createMemoryOutcomeStore = (): OutcomeStore & {
   const artifacts: MemoryArtifact[] = [];
   const events: { artifactId: string; outcome: string; at: Date }[] = [];
 
+  const join = (artifact: MemoryArtifact) => ({
+    features: artifact.features,
+    id: artifact.id,
+    outcomes: [
+      ...new Set(
+        events
+          .filter((event) => event.artifactId === artifact.id)
+          .map((event) => event.outcome),
+      ),
+    ],
+    variant: artifact.variant ?? null,
+  });
+
   return {
     artifacts,
     events,
+    listAllArtifactsWithOutcomes: (kind, since) =>
+      Promise.resolve(
+        artifacts
+          .filter((artifact) => artifact.kind === kind && artifact.at >= since)
+          .map(join),
+      ),
     listArtifactsWithOutcomes: (ownerId, kind, since) =>
       Promise.resolve(
         artifacts
@@ -63,18 +91,7 @@ export const createMemoryOutcomeStore = (): OutcomeStore & {
               artifact.kind === kind &&
               artifact.at >= since,
           )
-          .map((artifact) => ({
-            features: artifact.features,
-            id: artifact.id,
-            outcomes: [
-              ...new Set(
-                events
-                  .filter((event) => event.artifactId === artifact.id)
-                  .map((event) => event.outcome),
-              ),
-            ],
-            variant: artifact.variant ?? null,
-          })),
+          .map(join),
       ),
     recordArtifact: (input) => {
       artifacts.push({ ...input, at: input.at ?? new Date() });
