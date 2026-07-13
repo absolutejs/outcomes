@@ -1,6 +1,6 @@
 {
   "author": "Alex Kahn",
-  "description": "Outcome feedback loop for AI agents — typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
+  "description": "Outcome feedback loop for AI agents \u2014 typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
   "devDependencies": {
     "@types/bun": "latest",
     "prettier": "3.5.3",
@@ -26,12 +26,32 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && bun build src/index.ts --outdir dist --target=bun && tsc --emitDeclarationOnly --project tsconfig.json",
+    "build": "rm -rf dist && bun build src/index.ts src/manifest.ts --outdir dist --root ./src --target=bun && tsc --emitDeclarationOnly --project tsconfig.json && absolute-manifest emit",
     "format": "prettier --write \"./**/*.{ts,json,md}\"",
     "release": "bun run format && bun run test && bun run build && bun publish",
     "test": "bun test",
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "types": "./dist/src/index.d.ts",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "absolutejs": {
+    "manifestContract": 1
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./manifest": {
+      "types": "./dist/src/manifest.d.ts",
+      "import": "./dist/manifest.js",
+      "default": "./dist/manifest.js"
+    },
+    "./manifest.json": "./dist/manifest.json"
+  },
+  "dependencies": {
+    "@absolutejs/manifest": "^0.1.0",
+    "@sinclair/typebox": "^0.34.0"
+  }
 }
