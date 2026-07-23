@@ -2,7 +2,9 @@
   "author": "Alex Kahn",
   "description": "Outcome feedback loop for AI agents — typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
   "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
     "@types/bun": "latest",
+    "drizzle-orm": "1.0.0-rc.4",
     "prettier": "3.5.3",
     "typescript": "5.8.3"
   },
@@ -26,22 +28,27 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && bun build src/index.ts src/manifest.ts --outdir dist --root ./src --target=bun && tsc --emitDeclarationOnly --project tsconfig.json && absolute-manifest emit",
+    "build": "rm -rf dist && bun build src/index.ts src/drizzle.ts src/manifest.ts --outdir dist --root ./src --target=bun --external drizzle-orm --external 'drizzle-orm/*' --external drizzle-typebox && tsc --emitDeclarationOnly --project tsconfig.json && absolute-manifest emit",
     "format": "prettier --write \"./**/*.{ts,json,md}\"",
     "release": "bun run format && bun run test && bun run build && bun publish",
     "test": "bun test",
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "types": "./dist/src/index.d.ts",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "absolutejs": {
-    "manifestContract": 1
+    "manifestContract": 2
   },
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./drizzle": {
+      "types": "./dist/src/drizzle.d.ts",
+      "import": "./dist/drizzle.js",
+      "default": "./dist/drizzle.js"
     },
     "./manifest": {
       "types": "./dist/src/manifest.d.ts",
@@ -51,7 +58,16 @@
     "./manifest.json": "./dist/manifest.json"
   },
   "dependencies": {
-    "@absolutejs/manifest": "^0.1.0",
-    "@sinclair/typebox": "^0.34.0"
+    "@absolutejs/manifest": "^0.4.0",
+    "@sinclair/typebox": "^0.34.0",
+    "drizzle-typebox": "1.0.0-beta.14-a36c63d"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=1.0.0-rc.4 <2"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": {
+      "optional": true
+    }
   }
 }

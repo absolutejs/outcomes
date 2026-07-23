@@ -167,8 +167,16 @@ describe("product-wide listing", () => {
       kind: "chat_response",
       ownerId: "member-b",
     });
-    await store.recordOutcome({ artifactId: "1", outcome: "rated_bad" });
-    await store.recordOutcome({ artifactId: "2", outcome: "rated_bad" });
+    await store.recordOutcome({
+      artifactId: "1",
+      outcome: "rated_bad",
+      ownerId: "member-a",
+    });
+    await store.recordOutcome({
+      artifactId: "2",
+      outcome: "rated_bad",
+      ownerId: "member-b",
+    });
 
     const mine = await store.listArtifactsWithOutcomes(
       "member-a",

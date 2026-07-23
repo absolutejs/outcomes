@@ -27,12 +27,12 @@ const DEFAULT_MIN_SAMPLE = 10;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export const manifest = defineManifest<StatsOptions, OutcomesRuntime>()({
-  contract: 1,
+  contract: 2,
   identity: {
     accent: "#22c55e",
     category: "ai",
     description:
-      "The outcome feedback loop that makes an AI agent measurably better per user without training anything: record what the agent produced (artifacts with typed features frozen at production time), record what happened (opens, replies, conversions), and get attribution-joined stats by feature bucket — quiet below a sample threshold — plus an evidence block your own AI distills into a \"what works\" memo.",
+      'The outcome feedback loop that makes an AI agent measurably better per user without training anything: record what the agent produced (artifacts with typed features frozen at production time), record what happened (opens, replies, conversions), and get attribution-joined stats by feature bucket — quiet below a sample threshold — plus an evidence block your own AI distills into a "what works" memo.',
     docsUrl: "https://github.com/absolutejs/outcomes",
     name: "@absolutejs/outcomes",
     tagline: "Learn what your AI produces that actually works.",
@@ -47,6 +47,31 @@ export const manifest = defineManifest<StatsOptions, OutcomesRuntime>()({
         code: "createMemoryOutcomeStore()",
         imports: [
           { from: "@absolutejs/outcomes", names: ["createMemoryOutcomeStore"] },
+        ],
+      },
+    }),
+    defineImplementation<never>()({
+      contract: "outcomes/store",
+      factory: "createDrizzleOutcomeStore",
+      from: "@absolutejs/outcomes/drizzle",
+      requires: {
+        peers: [
+          {
+            name: "drizzle-orm",
+            range: ">=1.0.0-rc.4 <2",
+            reason: "Typed Postgres persistence",
+          },
+        ],
+        services: [{ description: "Outcome ledger database", id: "postgres" }],
+      },
+      title: "Drizzle Postgres (production, including Neon)",
+      wiring: {
+        code: "createDrizzleOutcomeStore({ db })",
+        imports: [
+          {
+            from: "@absolutejs/outcomes/drizzle",
+            names: ["createDrizzleOutcomeStore"],
+          },
         ],
       },
     }),
@@ -66,13 +91,23 @@ export const manifest = defineManifest<StatsOptions, OutcomesRuntime>()({
       configPath: "$self",
       contract: "outcomes/store",
       description: "Where artifacts and their outcomes are kept",
-      known: ["@absolutejs/outcomes#memory"],
+      known: [
+        "@absolutejs/outcomes#memory",
+        "@absolutejs/outcomes#drizzle-postgres",
+      ],
       required: true,
     },
   },
   tools: {
     outcome_stats: tool.runtime({
       annotations: { readOnlyHint: true },
+      authorization: {
+        approval: "never",
+        audience: "owner",
+        effects: ["read"],
+        requiredScopes: ["outcomes:read"],
+        resource: { ownerIdField: "ownerId", type: "outcome-ledger" },
+      },
       description:
         "Outcome rates for one person's artifacts of one kind — overall, per feature bucket, and per experiment variant. Reports not-ready below the sample threshold instead of guessing.",
       handler: async ({ kind, minSample, ownerId, sinceDays }, runtime) => {
@@ -105,16 +140,31 @@ export const manifest = defineManifest<StatsOptions, OutcomesRuntime>()({
       }),
     }),
     record_outcome: tool.runtime({
+      annotations: { idempotentHint: true },
+      authorization: {
+        approval: "policy",
+        audience: "owner",
+        effects: ["write"],
+        idempotency: { mode: "host" },
+        requiredScopes: ["outcomes:write"],
+        resource: {
+          idField: "artifactId",
+          ownerIdField: "ownerId",
+          type: "outcome-ledger",
+        },
+        reversible: false,
+      },
       description:
         "Record that an outcome happened to a tracked artifact (e.g. an email got a reply). No-ops when the artifact id is unknown.",
-      handler: async ({ artifactId, outcome }, { store }) => {
-        await store.recordOutcome({ artifactId, outcome });
+      handler: async ({ artifactId, outcome, ownerId }, { store }) => {
+        await store.recordOutcome({ artifactId, outcome, ownerId });
 
         return `recorded ${outcome} for ${artifactId}`;
       },
       input: Type.Object({
         artifactId: Type.String({ minLength: 1 }),
         outcome: Type.String({ minLength: 1 }),
+        ownerId: Type.String({ minLength: 1 }),
       }),
     }),
   },
@@ -154,7 +204,7 @@ export const manifest = defineManifest<StatsOptions, OutcomesRuntime>()({
           "// At production time, freeze the artifact's features:",
           "//   await outcomeStore.recordArtifact({ features, id, kind, ownerId });",
           "// From your signal hooks, record what happened:",
-          "//   await outcomeStore.recordOutcome({ artifactId, outcome: 'replied' });",
+          "//   await outcomeStore.recordOutcome({ artifactId, outcome: 'replied', ownerId });",
           "// Periodically, compute stats and let YOUR AI distill the evidence:",
           "//   const rows = await outcomeStore.listArtifactsWithOutcomes(ownerId, kind, since);",
           "//   const stats = computeOutcomeStats(outcomeVocabulary, kind, rows, {",

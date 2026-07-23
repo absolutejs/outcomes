@@ -31,6 +31,7 @@ export type OutcomeStore = {
   /** No-op when the artifact id is unknown (host hooks fire broadly). */
   recordOutcome: (input: {
     artifactId: string;
+    ownerId: string;
     outcome: string;
     at?: Date;
   }) => Promise<void>;
@@ -99,7 +100,13 @@ export const createMemoryOutcomeStore = (): OutcomeStore & {
       return Promise.resolve();
     },
     recordOutcome: (input) => {
-      if (artifacts.some((artifact) => artifact.id === input.artifactId)) {
+      if (
+        artifacts.some(
+          (artifact) =>
+            artifact.id === input.artifactId &&
+            artifact.ownerId === input.ownerId,
+        )
+      ) {
         events.push({
           artifactId: input.artifactId,
           at: input.at ?? new Date(),

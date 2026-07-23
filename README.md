@@ -54,7 +54,7 @@ const vocabulary = defineOutcomeVocabulary({
 });
 
 // At production time: store.recordArtifact({ id: sendId, ownerId, kind, features })
-// From your signal hooks: store.recordOutcome({ artifactId: sendId, outcome: "replied" })
+// From your signal hooks: store.recordOutcome({ artifactId: sendId, outcome: "replied", ownerId })
 
 const rows = await store.listArtifactsWithOutcomes(
   ownerId,
@@ -75,6 +75,31 @@ if (stats.ready) {
 Same machinery for an outreach copilot (features: subject length, tone;
 outcomes: replies) and an AI website builder (features: hero copy length,
 layout; outcomes: conversions from your analytics beacon).
+
+## Production persistence (Drizzle + Postgres/Neon)
+
+The optional `@absolutejs/outcomes/drizzle` entry exports a typed Postgres
+schema and store. It works with any Drizzle `PgAsyncDatabase`, including a
+Neon-backed database, and never creates schema at application runtime:
+
+```ts
+import {
+  createDrizzleOutcomeStore,
+  outcomesDrizzleSchema,
+} from "@absolutejs/outcomes/drizzle";
+
+const store = createDrizzleOutcomeStore({ db });
+```
+
+Include `outcomesDrizzleSchema` in your Drizzle migration schema. The same
+entry exports `OutcomeArtifactInsertSchema`, `OutcomeArtifactSelectSchema`,
+`OutcomeEventInsertSchema`, and `OutcomeEventSelectSchema`, generated with
+Drizzle-TypeBox directly from those tables so route contracts never restate
+database shapes.
+
+Outcome writes require `ownerId`; both memory and Drizzle stores no-op unless
+the artifact belongs to that owner. The contract-2 AI tools expose the same
+owner/resource binding for host policy enforcement.
 
 ## License
 

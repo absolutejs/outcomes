@@ -57,17 +57,23 @@ describe("store + stats", () => {
       await store.recordOutcome({
         artifactId: `send-${index}`,
         outcome: "opened",
+        ownerId: "member-1",
       });
       const replied = short ? index < 4 : index === 6;
       if (replied) {
         await store.recordOutcome({
           artifactId: `send-${index}`,
           outcome: "replied",
+          ownerId: "member-1",
         });
       }
     }
     // Outcome for an unknown artifact is dropped, not errored.
-    await store.recordOutcome({ artifactId: "ghost", outcome: "replied" });
+    await store.recordOutcome({
+      artifactId: "ghost",
+      outcome: "replied",
+      ownerId: "member-1",
+    });
 
     return store;
   };
@@ -121,7 +127,11 @@ describe("store + stats", () => {
       ownerId: "member-1",
       variant: "warm-intro",
     });
-    await store.recordOutcome({ artifactId: "a", outcome: "replied" });
+    await store.recordOutcome({
+      artifactId: "a",
+      outcome: "replied",
+      ownerId: "member-1",
+    });
     await store.recordArtifact({
       features: { mode: "outreach", subjectWords: 5 },
       id: "b",
