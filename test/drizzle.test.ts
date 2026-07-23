@@ -62,6 +62,12 @@ describe("createDrizzleOutcomeStore", () => {
       ownerId: "owner-a",
       variant: "hero-a",
     });
+    await store.recordArtifact({
+      features: { cta: "must-not-replace-frozen-features" },
+      id: "page-1",
+      kind: "landing_page",
+      ownerId: "owner-a",
+    });
     await store.recordOutcome({
       artifactId: "page-1",
       outcome: "conversion",

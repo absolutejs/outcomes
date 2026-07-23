@@ -95,7 +95,8 @@ export const createMemoryOutcomeStore = (): OutcomeStore & {
           .map(join),
       ),
     recordArtifact: (input) => {
-      artifacts.push({ ...input, at: input.at ?? new Date() });
+      if (!artifacts.some((artifact) => artifact.id === input.id))
+        artifacts.push({ ...input, at: input.at ?? new Date() });
 
       return Promise.resolve();
     },

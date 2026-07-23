@@ -159,6 +159,12 @@ describe("store + stats", () => {
       kind: "outreach_email",
       ownerId: "member-1",
     });
+    await store.recordArtifact({
+      features: { mode: "must-not-replace-frozen-features" },
+      id: "deduplicated",
+      kind: "outreach_email",
+      ownerId: "member-1",
+    });
     await store.recordOutcome({
       artifactId: "deduplicated",
       outcome: "opened",
@@ -171,5 +177,7 @@ describe("store + stats", () => {
     });
 
     expect(store.events).toHaveLength(1);
+    expect(store.artifacts).toHaveLength(1);
+    expect(store.artifacts[0]?.features).toEqual({ mode: "outreach" });
   });
 });

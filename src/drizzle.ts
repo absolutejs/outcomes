@@ -125,15 +125,18 @@ export const createDrizzleOutcomeStore = <DB extends AnyPgDatabase>({
     listArtifactsWithOutcomes: (ownerId, kind, since) =>
       list(kind, since, ownerId),
     recordArtifact: async (input) => {
-      await db.insert(outcomeArtifacts).values({
-        at: input.at ?? new Date(),
-        experimentId: input.experimentId,
-        features: input.features,
-        id: input.id,
-        kind: input.kind,
-        ownerId: input.ownerId,
-        variant: input.variant,
-      });
+      await db
+        .insert(outcomeArtifacts)
+        .values({
+          at: input.at ?? new Date(),
+          experimentId: input.experimentId,
+          features: input.features,
+          id: input.id,
+          kind: input.kind,
+          ownerId: input.ownerId,
+          variant: input.variant,
+        })
+        .onConflictDoNothing({ target: outcomeArtifacts.id });
     },
     recordOutcome: async (input) => {
       const [artifact] = await db
