@@ -35,7 +35,7 @@
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "types": "./dist/src/index.d.ts",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "absolutejs": {
     "manifestContract": 2
   },

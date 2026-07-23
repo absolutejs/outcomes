@@ -24,7 +24,8 @@ const createTestStore = async () => {
       id bigserial PRIMARY KEY,
       artifact_id text NOT NULL REFERENCES outcome_artifacts(id) ON DELETE CASCADE,
       outcome text NOT NULL,
-      at timestamptz NOT NULL
+      at timestamptz NOT NULL,
+      UNIQUE (artifact_id, outcome)
     );
   `);
 
@@ -65,6 +66,11 @@ describe("createDrizzleOutcomeStore", () => {
       artifactId: "page-1",
       outcome: "conversion",
       ownerId: "owner-b",
+    });
+    await store.recordOutcome({
+      artifactId: "page-1",
+      outcome: "conversion",
+      ownerId: "owner-a",
     });
     await store.recordOutcome({
       artifactId: "page-1",

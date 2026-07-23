@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   type PgAsyncDatabase,
 } from "drizzle-orm/pg-core";
 import type { OutcomeStore, ArtifactWithOutcomes } from "./store";
@@ -54,6 +55,10 @@ export const outcomeEvents = pgTable(
   (table) => [
     primaryKey({ columns: [table.id], name: "outcome_events_pkey" }),
     index("outcome_events_artifact_idx").on(table.artifactId),
+    uniqueIndex("outcome_events_artifact_outcome_idx").on(
+      table.artifactId,
+      table.outcome,
+    ),
   ],
 );
 
@@ -142,11 +147,16 @@ export const createDrizzleOutcomeStore = <DB extends AnyPgDatabase>({
         )
         .limit(1);
       if (artifact === undefined) return;
-      await db.insert(outcomeEvents).values({
-        artifactId: input.artifactId,
-        at: input.at ?? new Date(),
-        outcome: input.outcome,
-      });
+      await db
+        .insert(outcomeEvents)
+        .values({
+          artifactId: input.artifactId,
+          at: input.at ?? new Date(),
+          outcome: input.outcome,
+        })
+        .onConflictDoNothing({
+          target: [outcomeEvents.artifactId, outcomeEvents.outcome],
+        });
     },
   };
 };

@@ -100,13 +100,17 @@ export const createMemoryOutcomeStore = (): OutcomeStore & {
       return Promise.resolve();
     },
     recordOutcome: (input) => {
-      if (
-        artifacts.some(
-          (artifact) =>
-            artifact.id === input.artifactId &&
-            artifact.ownerId === input.ownerId,
-        )
-      ) {
+      const exists = artifacts.some(
+        (artifact) =>
+          artifact.id === input.artifactId &&
+          artifact.ownerId === input.ownerId,
+      );
+      const duplicate = events.some(
+        (event) =>
+          event.artifactId === input.artifactId &&
+          event.outcome === input.outcome,
+      );
+      if (exists && !duplicate) {
         events.push({
           artifactId: input.artifactId,
           at: input.at ?? new Date(),

@@ -150,4 +150,26 @@ describe("store + stats", () => {
     expect(stats.byVariant?.["warm-intro"]?.outcomes.replied?.rate).toBe(1);
     expect(stats.byVariant?.["direct-ask"]?.outcomes.replied?.rate).toBe(0);
   });
+
+  test("deduplicates repeated outcome delivery", async () => {
+    const store = createMemoryOutcomeStore();
+    await store.recordArtifact({
+      features: { mode: "outreach" },
+      id: "deduplicated",
+      kind: "outreach_email",
+      ownerId: "member-1",
+    });
+    await store.recordOutcome({
+      artifactId: "deduplicated",
+      outcome: "opened",
+      ownerId: "member-1",
+    });
+    await store.recordOutcome({
+      artifactId: "deduplicated",
+      outcome: "opened",
+      ownerId: "member-1",
+    });
+
+    expect(store.events).toHaveLength(1);
+  });
 });
