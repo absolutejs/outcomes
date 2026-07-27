@@ -37,6 +37,60 @@ export const manifest = defineManifest<StatsOptions, OutcomesRuntime>()({
     name: "@absolutejs/outcomes",
     tagline: "Learn what your AI produces that actually works.",
   },
+  product: {
+    blocks: [
+      {
+        category: "growth",
+        componentExport: "OutcomeReport",
+        description:
+          "Show privacy-safe aggregate outcome rates by feature bucket and experiment variant.",
+        frameworks: ["react", "client"],
+        id: "outcome_report",
+        props: Type.Object({
+          kind: Type.String({ minLength: 1 }),
+          ownerId: Type.String({ minLength: 1 }),
+        }),
+        title: "Outcome report",
+      },
+    ],
+    dataSources: [
+      {
+        description:
+          "Aggregate-only outcome statistics with minimum-sample privacy posture.",
+        id: "outcome_statistics",
+        operations: ["aggregate"],
+        schema: Type.Object({
+          kind: Type.String(),
+          ready: Type.Boolean(),
+          sampleSize: Type.Integer({ minimum: 0 }),
+        }),
+        title: "Outcome statistics",
+        tools: { aggregate: "outcome_stats" },
+      },
+    ],
+    events: [
+      {
+        description:
+          "Emitted when a privacy-safe outcome is attributed to a tracked artifact.",
+        id: "outcome_recorded",
+        schema: Type.Object({
+          artifactId: Type.String(),
+          outcome: Type.String(),
+          ownerId: Type.String(),
+        }),
+        source: "data",
+        title: "Outcome recorded",
+      },
+    ],
+    workflowActions: [
+      {
+        description: "Record an idempotent outcome against a tracked artifact.",
+        id: "record_outcome",
+        title: "Record outcome",
+        tool: "record_outcome",
+      },
+    ],
+  },
   implements: [
     defineImplementation<never>()({
       contract: "outcomes/store",

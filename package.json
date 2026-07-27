@@ -35,9 +35,25 @@
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "types": "./dist/src/index.d.ts",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "absolutejs": {
-    "manifestContract": 2
+    "manifestContract": 2,
+    "runtimePeers": {
+      "drizzle-orm": {
+        "artifactImports": [
+          "drizzle-orm",
+          "drizzle-orm/pg-core"
+        ],
+        "artifactReferences": [],
+        "buildExternals": [
+          "drizzle-orm",
+          "drizzle-orm/*"
+        ],
+        "optional": true,
+        "range": ">=1.0.0-rc.4 <2",
+        "tested": "1.0.0-rc.4"
+      }
+    }
   },
   "exports": {
     ".": {
@@ -58,7 +74,7 @@
     "./manifest.json": "./dist/manifest.json"
   },
   "dependencies": {
-    "@absolutejs/manifest": "^0.4.0",
+    "@absolutejs/manifest": "^0.8.0",
     "@sinclair/typebox": "^0.34.0",
     "drizzle-typebox": "1.0.0-beta.14-a36c63d"
   },
