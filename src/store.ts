@@ -19,6 +19,7 @@ export type OutcomeArtifactInput = {
 };
 
 export type ArtifactWithOutcomes = {
+  at: Date;
   id: string;
   features: OutcomeFeatures;
   variant?: string | null;
@@ -62,6 +63,7 @@ export const createMemoryOutcomeStore = (): OutcomeStore & {
   const events: { artifactId: string; outcome: string; at: Date }[] = [];
 
   const join = (artifact: MemoryArtifact) => ({
+    at: artifact.at,
     features: artifact.features,
     id: artifact.id,
     outcomes: [

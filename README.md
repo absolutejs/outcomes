@@ -1,5 +1,8 @@
 # @absolutejs/outcomes
 
+Listed attributed artifacts retain their observation time, allowing hosts to
+build privacy-safe time cohorts without reaching around the store contract.
+
 The outcome feedback loop that makes an AI agent **measurably better per
 user** — without training anything.
 

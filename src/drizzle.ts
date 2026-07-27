@@ -83,6 +83,7 @@ const rowsToArtifacts = (
   const byId = new Map<string, ArtifactWithOutcomes>();
   for (const row of rows) {
     const current = byId.get(row.artifact.id) ?? {
+      at: row.artifact.at,
       features: row.artifact.features,
       id: row.artifact.id,
       outcomes: [],
