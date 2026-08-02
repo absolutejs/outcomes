@@ -6,7 +6,7 @@ build privacy-safe time cohorts without reaching around the store contract.
 The outcome feedback loop that makes an AI agent **measurably better per
 user** — without training anything.
 
-Built for the AbsoluteJS AI Studio.
+Used by the hosted AbsoluteJS.ai platform and available as a standalone outcomes package.
 
 ## The idea
 
@@ -30,48 +30,48 @@ features, and an ordered list of outcome events — and the package derives:
 
 ```ts
 import {
-  computeOutcomeStats,
-  defineOutcomeVocabulary,
-  renderEvidence,
-} from "@absolutejs/outcomes";
+	computeOutcomeStats,
+	defineOutcomeVocabulary,
+	renderEvidence
+} from '@absolutejs/outcomes';
 
 const vocabulary = defineOutcomeVocabulary({
-  artifacts: {
-    outreach_email: {
-      label: "Outreach email",
-      features: {
-        subjectWords: {
-          type: "number",
-          buckets: [
-            { label: "short", max: 7 },
-            { label: "medium", max: 12 },
-          ],
-          overflowLabel: "long",
-        },
-        mode: { type: "string", values: ["outreach", "followup"] },
-        hasQuestion: { type: "boolean" },
-      },
-    },
-  },
-  outcomes: ["opened", "replied", "meeting_scheduled"],
+	artifacts: {
+		outreach_email: {
+			label: 'Outreach email',
+			features: {
+				subjectWords: {
+					type: 'number',
+					buckets: [
+						{ label: 'short', max: 7 },
+						{ label: 'medium', max: 12 }
+					],
+					overflowLabel: 'long'
+				},
+				mode: { type: 'string', values: ['outreach', 'followup'] },
+				hasQuestion: { type: 'boolean' }
+			}
+		}
+	},
+	outcomes: ['opened', 'replied', 'meeting_scheduled']
 });
 
 // At production time: store.recordArtifact({ id: sendId, ownerId, kind, features })
 // From your signal hooks: store.recordOutcome({ artifactId: sendId, outcome: "replied", ownerId })
 
 const rows = await store.listArtifactsWithOutcomes(
-  ownerId,
-  "outreach_email",
-  since,
+	ownerId,
+	'outreach_email',
+	since
 );
-const stats = computeOutcomeStats(vocabulary, "outreach_email", rows, {
-  minSample: 10,
+const stats = computeOutcomeStats(vocabulary, 'outreach_email', rows, {
+	minSample: 10
 });
 if (stats.ready) {
-  const memo = await yourAiCall(
-    `Distill what works:\n${renderEvidence(stats)}`,
-  );
-  // …feed `memo` into every future draft; show `stats` in your UI.
+	const memo = await yourAiCall(
+		`Distill what works:\n${renderEvidence(stats)}`
+	);
+	// …feed `memo` into every future draft; show `stats` in your UI.
 }
 ```
 
@@ -87,9 +87,9 @@ Neon-backed database, and never creates schema at application runtime:
 
 ```ts
 import {
-  createDrizzleOutcomeStore,
-  outcomesDrizzleSchema,
-} from "@absolutejs/outcomes/drizzle";
+	createDrizzleOutcomeStore,
+	outcomesDrizzleSchema
+} from '@absolutejs/outcomes/drizzle';
 
 const store = createDrizzleOutcomeStore({ db });
 ```
