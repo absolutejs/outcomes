@@ -3,7 +3,7 @@ import {
   defineManifest,
   toolFactory,
 } from "@absolutejs/manifest";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import { computeOutcomeStats } from "./stats";
 import type { OutcomeStore } from "./store";
 import type { OutcomeVocabulary } from "./vocabulary";
