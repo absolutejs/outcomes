@@ -2,7 +2,7 @@
   "author": "Alex Kahn",
   "description": "Outcome feedback loop for AI agents — typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
   "devDependencies": {
-    "@absolutejs/changelog": "^0.2.0",
+    "@absolutejs/changelog": "^0.4.0",
     "@electric-sql/pglite": "0.3.14",
     "@types/bun": "latest",
     "drizzle-orm": "1.0.0-rc.4",
