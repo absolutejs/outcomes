@@ -2,6 +2,7 @@
   "author": "Alex Kahn",
   "description": "Outcome feedback loop for AI agents — typed artifact features + attribution-joined outcome stats + evidence rendering, so an agent's context (not its weights) gets measurably better per user. Experiment variants bolt on.",
   "devDependencies": {
+    "@absolutejs/changelog": "^0.1.2",
     "@electric-sql/pglite": "0.3.14",
     "@types/bun": "latest",
     "drizzle-orm": "1.0.0-rc.4",
@@ -23,16 +24,19 @@
     "url": "https://github.com/absolutejs/outcomes/issues"
   },
   "files": [
-    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
     "README.md",
-    "LICENSE"
+    "changelog.json",
+    "dist"
   ],
   "scripts": {
     "build": "rm -rf dist && bun build src/index.ts src/drizzle.ts src/manifest.ts --outdir dist --root ./src --target=bun --external drizzle-orm --external 'drizzle-orm/*' --external drizzle-typebox --external typebox --external 'typebox/*' && tsc --emitDeclarationOnly --project tsconfig.json && absolute-manifest emit",
     "format": "prettier --write \"./**/*.{ts,json,md}\"",
     "release": "bun run format && bun run test && bun run build && bun publish",
     "test": "bun test",
-    "typecheck": "tsc --noEmit --project tsconfig.json"
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "check:package": "absolute-changelog check"
   },
   "types": "./dist/src/index.d.ts",
   "version": "0.3.1",
